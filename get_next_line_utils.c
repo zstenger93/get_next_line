@@ -6,7 +6,7 @@
 /*   By: zstenger <zstenger@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/23 12:48:10 by zstenger          #+#    #+#             */
-/*   Updated: 2022/10/27 13:22:23 by zstenger         ###   ########.fr       */
+/*   Updated: 2022/11/06 17:02:42 by zstenger         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ void	*ft_calloc(size_t count, size_t size)
 }
 
 //for getting the '\n' 
-char	*ft_strchr(const char *string, int lookfor)
+char	*gnl_strchr(const char *string, int lookfor)
 {
 	char	*str;
 

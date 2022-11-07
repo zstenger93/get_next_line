@@ -6,7 +6,7 @@
 /*   By: zstenger <zstenger@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/21 15:48:07 by zstenger          #+#    #+#             */
-/*   Updated: 2022/10/30 14:58:28 by zstenger         ###   ########.fr       */
+/*   Updated: 2022/11/06 16:57:57 by zstenger         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,10 @@ char	*get_next_line(int fd)
 	static char	*buffer;
 	char		*line;
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+	line = NULL;
+	if (BUFFER_SIZE < 1 || read(fd, NULL, 0) == -1)
 		return (NULL);
 	buffer = ft_read_file(fd, buffer);
-	if (!buffer)
-		return (NULL);
 	line = ft_return_line(buffer);
 	buffer = ft_remove_line(buffer);
 	return (line);
@@ -54,14 +53,16 @@ char	*ft_read_file(int fd, char *resource)
 
 	if (!resource)
 		resource = ft_calloc(1, 1);
-	buffer = ft_calloc(BUFFER_SIZE, sizeof(char));
+	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (!buffer)
+		return (NULL);
 	current_byte_being_read = 1;
 	while (current_byte_being_read > 0)
 	{
 		current_byte_being_read = read(fd, buffer, BUFFER_SIZE);
 		buffer[current_byte_being_read] = 0;
 		resource = ft_free_buffer(resource, buffer);
-		if (ft_strchr(buffer, '\n'))
+		if (gnl_strchr(buffer, '\n'))
 			break ;
 	}
 	free(buffer);
@@ -80,19 +81,24 @@ char	*ft_remove_line(char *buffer)
 	int		s;
 	char	*file_minus_line;
 
+	if (!buffer)
+		return (NULL);
 	z = 0;
-	while (buffer[z] && buffer[z] != '\n')
+	while (buffer[z] != '\0' && buffer[z] != '\n')
 		z++;
-	if (!buffer[z])
+	if (buffer[z] == '\0')
 	{
 		free(buffer);
 		return (NULL);
 	}
-	file_minus_line = ft_calloc((ft_strlen(buffer) - z + 1), sizeof(char));
+	file_minus_line = malloc(sizeof(char) * ((ft_strlen(buffer) - z) + 1));
+	if (!file_minus_line)
+		return (NULL);
 	z++;
 	s = 0;
-	while (buffer[z])
+	while (buffer[z] != '\0')
 		file_minus_line[s++] = buffer[z++];
+	file_minus_line[s] = '\0';
 	free(buffer);
 	return (file_minus_line);
 }
@@ -115,7 +121,7 @@ char	*ft_return_line(char *buffer)
 		return (NULL);
 	while (buffer[z] && buffer[z] != '\n')
 		z++;
-	line = ft_calloc(z + 2, sizeof(char));
+	line = malloc(sizeof(char) * (z + 2));
 	z = 0;
 	while (buffer[z] && buffer[z] != '\n')
 	{
@@ -124,6 +130,7 @@ char	*ft_return_line(char *buffer)
 	}
 	if (buffer[z] && buffer[z] == '\n')
 		line[z++] = '\n';
+	line[z] = '\0';
 	return (line);
 }
 

@@ -6,7 +6,7 @@
 /*   By: zstenger <zstenger@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 09:56:51 by zstenger          #+#    #+#             */
-/*   Updated: 2022/10/28 11:22:18 by zstenger         ###   ########.fr       */
+/*   Updated: 2022/11/07 14:12:03 by zstenger         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 /*
 OPEN_MAX is the constant that defines the maximum number of open files allowed
-for a single program so with it we can read multiple 'fd' at the same time
+for a single program(1024) so with it we can read multiple 'fd' at the same time
 if the file descriptor, the file being read is less than 0 or the buffer
 size is equal or smaller than zero, return null
 read the file
@@ -27,11 +27,10 @@ char	*get_next_line(int fd)
 	static char	*buffer[OPEN_MAX];
 	char		*line;
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+	line = NULL;
+	if (read(fd, NULL, 0) == -1 || BUFFER_SIZE < 1)
 		return (NULL);
 	buffer[fd] = ft_read_file(fd, buffer[fd]);
-	if (!buffer[fd])
-		return (NULL);
 	line = ft_return_line(buffer[fd]);
 	buffer[fd] = ft_remove_line(buffer[fd]);
 	return (line);
@@ -55,17 +54,20 @@ char	*ft_read_file(int fd, char *resource)
 
 	if (!resource)
 		resource = ft_calloc(1, 1);
-	buffer = ft_calloc(BUFFER_SIZE, sizeof(char));
+	buffer = malloc((sizeof(char)) * (BUFFER_SIZE + 1));
+	if (!buffer)
+		return (NULL);
 	current_byte_being_read = 1;
-	while (current_byte_being_read > 0)
+	while (current_byte_being_read > 0 && current_byte_being_read != '\0')
 	{
 		current_byte_being_read = read(fd, buffer, BUFFER_SIZE);
-		buffer[current_byte_being_read] = 0;
+		buffer[current_byte_being_read] = '\0';
 		resource = ft_free_buffer(resource, buffer);
-		if (ft_strchr(buffer, '\n'))
+		if (gnl_strchr(buffer, '\n'))
 			break ;
 	}
 	free(buffer);
+	buffer = NULL;
 	return (resource);
 }
 
@@ -82,18 +84,21 @@ char	*ft_remove_line(char *buffer)
 	char	*file_minus_line;
 
 	z = 0;
-	while (buffer[z] && buffer[z] != '\n')
+	while (buffer[z] != '\0' && buffer[z] != '\n')
 		z++;
-	if (!buffer[z])
+	if (buffer[z] == '\0')
 	{
 		free(buffer);
 		return (NULL);
 	}
-	file_minus_line = ft_calloc((ft_strlen(buffer) - z + 1), sizeof(char));
+	file_minus_line = malloc(sizeof(char) * ((ft_strlen(buffer) - z) + 1));
+	if (!file_minus_line)
+		return (NULL);
 	z++;
 	s = 0;
-	while (buffer[z])
+	while (buffer[z] != '\0')
 		file_minus_line[s++] = buffer[z++];
+	file_minus_line[s] = '\0';
 	free(buffer);
 	return (file_minus_line);
 }
@@ -114,17 +119,21 @@ char	*ft_return_line(char *buffer)
 	z = 0;
 	if (!buffer[z])
 		return (NULL);
-	while (buffer[z] && buffer[z] != '\n')
+	while (buffer[z] != '\0' && buffer[z] != '\n')
 		z++;
-	line = ft_calloc(z + 2, sizeof(char));
+	if (buffer[z] == '\n')
+		line = malloc(sizeof(char) * (z + 2));
+	else if (buffer[z] == '\0')
+		line = malloc(sizeof(char) * (z + 1));
 	z = 0;
-	while (buffer[z] && buffer[z] != '\n')
+	while (buffer[z] != '\0' && buffer[z] != '\n')
 	{
 		line[z] = buffer[z];
 		z++;
 	}
 	if (buffer[z] && buffer[z] == '\n')
 		line[z++] = '\n';
+	line[z] = '\0';
 	return (line);
 }
 
