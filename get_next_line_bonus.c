@@ -6,76 +6,44 @@
 /*   By: zstenger <zstenger@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 09:56:51 by zstenger          #+#    #+#             */
-/*   Updated: 2022/11/07 14:12:03 by zstenger         ###   ########.fr       */
+/*   Updated: 2022/11/16 18:22:33 by zstenger         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include	"get_next_line_bonus.h"
 
 /*
-OPEN_MAX is the constant that defines the maximum number of open files allowed
-for a single program(1024) so with it we can read multiple 'fd' at the same time
-if the file descriptor, the file being read is less than 0 or the buffer
-size is equal or smaller than zero, return null
-read the file
-take the line when \n found
-remove the line from the buffer
-return the line
-*/
-char	*get_next_line(int fd)
-{
-	static char	*buffer[OPEN_MAX];
-	char		*line;
-
-	line = NULL;
-	if (read(fd, NULL, 0) == -1 || BUFFER_SIZE < 1)
-		return (NULL);
-	buffer[fd] = ft_read_file(fd, buffer[fd]);
-	line = ft_return_line(buffer[fd]);
-	buffer[fd] = ft_remove_line(buffer[fd]);
-	return (line);
-}
-
-/*
-if no resource then allocate one block of memory with one byte on it
-thi is against seg faults caused by entering the function with nothing
-to read
-allocating the memory for the buffer
-assigning the value of the current bytes being read
-while its bigger than 0 and not end of line, read
-buffer[] set to 0 to prevent leaks
-assign the resource to the line got from the buffer and when the new
-line found stop reading, free the bufer and return the resource
+allocate memory for buffer size+1, check if its ok
+start reading while no new line and the reading_bytes is not 0
+read to buffer and set the byte to \0 to avoid leaks
+putting what we read with strjoin from buffer to resource
+and finally free the buffer and return the resource
 */
 char	*ft_read_file(int fd, char *resource)
 {
 	char	*buffer;
-	int		current_byte_being_read;
+	int		reading_bytes;
 
-	if (!resource)
-		resource = ft_calloc(1, 1);
-	buffer = malloc((sizeof(char)) * (BUFFER_SIZE + 1));
+	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buffer)
 		return (NULL);
-	current_byte_being_read = 1;
-	while (current_byte_being_read > 0 && current_byte_being_read != '\0')
+	reading_bytes = 1;
+	while (!gnl_strchr(resource, '\n') && reading_bytes != 0)
 	{
-		current_byte_being_read = read(fd, buffer, BUFFER_SIZE);
-		buffer[current_byte_being_read] = '\0';
-		resource = ft_free_buffer(resource, buffer);
-		if (gnl_strchr(buffer, '\n'))
-			break ;
+		reading_bytes = read(fd, buffer, BUFFER_SIZE);
+		buffer[reading_bytes] = '\0';
+		resource = ft_strjoin(resource, buffer);
 	}
 	free(buffer);
-	buffer = NULL;
 	return (resource);
 }
 
 /*
-while buffer[] and its not a new line, count
-if no buffer, free buffer, return null (to aovid leaks)
-allocate memory for the length of file - length of first line + 1
-assign the buffer to the line, free the buffer and return the line
+calc length of the line, free the buffer if necessary
+allocating the memory for the remaining resource
+put the remaining buffer on file_minus_line, set the \0
+free the buffer and return the remaining resource aka
+file_minus_line
 */
 char	*ft_remove_line(char *buffer)
 {
@@ -84,19 +52,19 @@ char	*ft_remove_line(char *buffer)
 	char	*file_minus_line;
 
 	z = 0;
-	while (buffer[z] != '\0' && buffer[z] != '\n')
+	while (buffer[z] && buffer[z] != '\n')
 		z++;
-	if (buffer[z] == '\0')
+	if (!buffer[z])
 	{
 		free(buffer);
 		return (NULL);
 	}
-	file_minus_line = malloc(sizeof(char) * ((ft_strlen(buffer) - z) + 1));
+	file_minus_line = malloc(sizeof(char) * (ft_strlen(buffer) - z + 1));
 	if (!file_minus_line)
 		return (NULL);
 	z++;
 	s = 0;
-	while (buffer[z] != '\0')
+	while (buffer[z])
 		file_minus_line[s++] = buffer[z++];
 	file_minus_line[s] = '\0';
 	free(buffer);
@@ -104,12 +72,9 @@ char	*ft_remove_line(char *buffer)
 }
 
 /*
-no line -> return
-go to the end of the line
-malloc the line line +2 for \n and terminatign null
-assign the buffer to the line
-add the \n to the end of the line and
-return the line
+calc the length until new line then if we ahve it allocate the
+length + 2 <-(for \n and \0) else allocate length + 1 <-(for \0 only)
+put the buffer on the line, set the \n, \0 and return the line
 */
 char	*ft_return_line(char *buffer)
 {
@@ -119,33 +84,54 @@ char	*ft_return_line(char *buffer)
 	z = 0;
 	if (!buffer[z])
 		return (NULL);
-	while (buffer[z] != '\0' && buffer[z] != '\n')
+	while (buffer[z] && buffer[z] != '\n')
 		z++;
 	if (buffer[z] == '\n')
 		line = malloc(sizeof(char) * (z + 2));
-	else if (buffer[z] == '\0')
+	if (buffer[z] == '\0')
 		line = malloc(sizeof(char) * (z + 1));
+	if (!line)
+		return (NULL);
 	z = 0;
-	while (buffer[z] != '\0' && buffer[z] != '\n')
+	while (buffer[z] && buffer[z] != '\n')
 	{
 		line[z] = buffer[z];
 		z++;
 	}
-	if (buffer[z] && buffer[z] == '\n')
+	if (buffer[z] == '\n')
 		line[z++] = '\n';
 	line[z] = '\0';
 	return (line);
 }
 
 /*
-takes the buff to the buffer and assign the buffer to a pointer,
-frees the buffer and retruns the pointer
+OPEN_MAX is the constant that defines the maximum number of open files allowed
+for a single program(1024) so with it we can read multiple 'fd' at the same time
+|----------actually OPEN_MAX value depends on the type of system!-----------|
+|___________________________________________________________________________|
+when read returns error (-1) we should clear the static buffer and for extra
+protectionset it to NULL
+read
+return line
+remove line return the rest
 */
-char	*ft_free_buffer(char *buffer, char *buff)
+char	*get_next_line(int fd)
 {
-	char	*temp;
+	static char	*buffer[OPEN_MAX];
+	char		*line;
 
-	temp = ft_strjoin(buffer, buff);
-	free(buffer);
-	return (temp);
+	if (read(fd, NULL, 0) == -1)
+	{
+		free(buffer[fd]);
+		buffer[fd] = NULL;
+		return (NULL);
+	}
+	if (BUFFER_SIZE < 1 || fd < 0)
+		return (NULL);
+	buffer[fd] = ft_read_file(fd, buffer[fd]);
+	if (!buffer[fd])
+		return (NULL);
+	line = ft_return_line(buffer[fd]);
+	buffer[fd] = ft_remove_line(buffer[fd]);
+	return (line);
 }

@@ -6,7 +6,7 @@
 /*   By: zstenger <zstenger@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 09:57:18 by zstenger          #+#    #+#             */
-/*   Updated: 2022/11/07 14:21:18 by zstenger         ###   ########.fr       */
+/*   Updated: 2022/11/16 18:05:40 by zstenger         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,16 +22,14 @@
 
 char	*get_next_line(int fd);
 
+//parts of gnl, read, return the line and remove that line from the rest
 char	*ft_remove_line(char *buffer);
 char	*ft_return_line(char *buffer);
-char	*ft_free_buffer(char *buffer, char *buff);
 char	*ft_read_file(int fd, char *resource);
 
 //extra functions
-char	*ft_strjoin(char const *s1, char const *s2);
-char	*gnl_strchr(const char *string, int lookfor);
+char	*ft_strjoin(char *resource, char *buffer);
+char	*gnl_strchr(char *string, int lookfor);
 size_t	ft_strlen(const char *theline);
-void	*ft_calloc(size_t count, size_t size);
-void	ft_bzero(void *s, size_t n);
 
 #endif

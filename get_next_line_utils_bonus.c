@@ -6,93 +6,73 @@
 /*   By: zstenger <zstenger@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 09:56:25 by zstenger          #+#    #+#             */
-/*   Updated: 2022/11/06 17:02:35 by zstenger         ###   ########.fr       */
+/*   Updated: 2022/11/16 18:49:24 by zstenger         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include	"get_next_line_bonus.h"
 
-//get the length of the line (thestr)
+//get the length of the line and resource
 size_t	ft_strlen(const char *theline)
 {
 	int	z;
 
+	if (!theline)
+		return (0);
 	z = 0;
-	while (theline[z])
+	while (theline[z] != '\0')
 		z++;
 	return (z);
 }
 
-//for calloc to put zeroes on the allocated memory
-void	ft_bzero(void *s, size_t n)
+// for finding the '\n' 
+char	*gnl_strchr(char *string, int lookfor)
 {
-	char	*str;
-	size_t	z;
+	int	z;
 
-	str = (char *)s;
 	z = 0;
-	while (z < n)
+	if (!string)
+		return (0);
+	while (string[z] != '\0')
 	{
-		str[z] = '\0';
+		if (string[z] == (char) lookfor)
+			return ((char *)&string[z]);
 		z++;
 	}
-}
-
-void	*ft_calloc(size_t count, size_t size)
-{
-	char	*res;
-
-	res = malloc(size * count);
-	if (!res)
-		return (NULL);
-	ft_bzero(res, size * count);
-	return (res);
-}
-
-//for getting the '\n' 
-char	*gnl_strchr(const char *string, int lookfor)
-{
-	char	*str;
-
-	str = (char *)string;
-	while (*str != lookfor && *str != 0)
-		str++;
-	if (*str == lookfor)
-		return (str);
-	else
-		return (NULL);
+	return (0);
 }
 
 /*
-for taking the buff (line from the source file)
-to the buffer and assign it to a temporary pointer
-then free the buffer and return the pointer and assign
-it to res(resource)
+first things first if there is no resource, allocating one byte and setting
+the \0 to avoid leaks
+allocating, and if we have resource putting it on a string until \0, then 
+afterwards putting the buffer as well and setting the \0 at the end then
+free resource
 */
-char	*ft_strjoin(char const *s1, char const *s2)
+char	*ft_strjoin(char *resource, char *buffer)
 {
-	int		z;
-	int		j;
-	int		fullsize;
-	char	*res;
+	size_t	i;
+	size_t	j;
+	char	*str;
 
-	z = 0;
-	fullsize = ft_strlen(s1) + ft_strlen(s2);
-	res = malloc(sizeof(char) * (fullsize + 1));
-	if (!res || !s1 || !s2)
+	if (!resource)
+	{
+		resource = malloc(1 * sizeof(char));
+		resource[0] = '\0';
+	}
+	if (!resource || !buffer)
 		return (NULL);
-	while (s1[z] != 0)
-	{
-		res[z] = s1[z];
-		z++;
-	}
+	str = malloc(sizeof(char) * (ft_strlen(resource) + ft_strlen(buffer) + 1));
+	if (!str)
+		return (NULL);
+	i = -1;
 	j = 0;
-	while (s2[j] != 0)
-	{
-		res[z] = s2[j];
-		z++;
-		j++;
-	}
-	res[fullsize] = 0;
-	return (res);
+	if (resource)
+		while (resource[++i] != '\0')
+			str[i] = resource[i];
+	while (buffer[j] != '\0')
+		str[i++] = buffer[j++];
+	str[ft_strlen(resource) + ft_strlen(buffer)] = '\0';
+	free(resource);
+	return (str);
 }
