@@ -6,7 +6,7 @@
 /*   By: zstenger <zstenger@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 09:56:25 by zstenger          #+#    #+#             */
-/*   Updated: 2022/11/16 18:49:24 by zstenger         ###   ########.fr       */
+/*   Updated: 2022/11/17 16:53:20 by zstenger         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ char	*ft_strjoin(char *resource, char *buffer)
 		resource = malloc(1 * sizeof(char));
 		resource[0] = '\0';
 	}
-	if (!resource || !buffer)
+	if (!buffer || !resource)
 		return (NULL);
 	str = malloc(sizeof(char) * (ft_strlen(resource) + ft_strlen(buffer) + 1));
 	if (!str)

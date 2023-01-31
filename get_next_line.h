@@ -6,7 +6,7 @@
 /*   By: zstenger <zstenger@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/21 15:46:09 by zstenger          #+#    #+#             */
-/*   Updated: 2022/11/16 18:05:32 by zstenger         ###   ########.fr       */
+/*   Updated: 2022/11/17 15:37:50 by zstenger         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ char	*ft_remove_line(char *buffer);
 char	*ft_return_line(char *buffer);
 char	*ft_read_file(int fd, char *resource);
 
-//extra functions
+//extra helper functions
 char	*ft_strjoin(char *resource, char *buffer);
 char	*gnl_strchr(char *string, int lookfor);
 size_t	ft_strlen(const char *theline);
